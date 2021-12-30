@@ -194,16 +194,27 @@ function updateWordArray() {
     console.log(correctWords2)
 
     var correctWords3 = []
+
     // Present letters
-    for (word of correctWords2) {        
-        if (present.flat().every(m => word.includes(m))) {
-            correctWords3.push(word)
+    var unknownLetterIndicies = []
+    for (i=0;i<correct.length;i++){
+        if (correct[i] == '') {
+            unknownLetterIndicies.push(i)
         }
     }
-    for (word of correctWords3) {
-        
+    for (word of correctWords2) {        
+        if (present.flat().every(m => word.includes(m))) {
+
+            for (i of unknownLetterIndicies) {
+                if (present[i].every(m => word[i] != m)){
+                    if (!(correctWords3.includes(word))){
+                        correctWords3.push(word)
+                    }
+                }
+            }
+        }
     }
-    
+
 
     console.log('C3')
 
