@@ -103,10 +103,13 @@ function getIndexOfNextRow() {
             break
         }
         var row = gameRows[i]
+        if (row.shadowRoot.querySelectorAll('game-tile')[0].shadowRoot.querySelector('div').getAttribute('data-state') == "tbd") {
+            return i
+        }
         if (row.getAttribute('letters') === '') {
             if (row.shadowRoot.querySelectorAll('game-tile')[0].getAttribute('evaluation') == null){
-                break
-            }
+                return i
+            }  
         }
     }
     return i
@@ -127,43 +130,58 @@ function updateWordArray() {
     var present = [[],[],[],[],[]]
     for (var j=i;j>=0;j--) { // Iterate over all the other rows to figure out the words to keep
         row = gameRows[j]
+        console.log(j)
         var tiles = row.shadowRoot.querySelectorAll('game-tile')
         for (var k = 0; k < 5; k++) {
-            if (correct[k] == ''){
-                var tile = tiles[k]
-                var char = tile.getAttribute('letter')
-                var evaluation = tile.getAttribute('evaluation')
-                if (evaluation == 'correct') {
+            var tile = tiles[k]
+            var char = tile.getAttribute('letter')
+            var evaluation = tile.getAttribute('evaluation')
+            if (evaluation == 'correct') {
+                if (correct[k] == ''){
                     correct[k] = char
-                    continue
                 }
-                if (evaluation == 'present') {
-                    if (!(present[k].includes(char))) {
-                        present[k].push(char)
-                    }
+            }
+            if (evaluation == 'present') {
+                if (!(present[k].includes(char))) {
+                    present[k].push(char)
                 }
-                if (evaluation == 'absent') {
-                    if (!(absent.includes(char))) {
-                        if (!(present.includes(char))) {
-                            if (!(correct.includes(char))) {
-                                absent.push(char)
-                            }
+            }
+            if (evaluation == 'absent') {
+                console.log(char)
+                if (!(absent.includes(char))) {
+                    if (!(present.includes(char))) {
+                        if (!(correct.includes(char))) {
+                            absent.push(char)
                         }
                     }
                 }
             }
         }
     }
+    console.log(absent)
+
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+      }
+    
+
     var absentsToRemove = []
     for (var abs of absent) {
         if (correct.includes(abs)){
-            absentsToRemove.push(absent.indexOf(abs))
+            if (!(absentsToRemove.includes(absent.indexOf(abs)))){
+                absentsToRemove.push(absent.indexOf(abs))
+            }
         }
         if (present.flat().includes(abs)) {
-            absentsToRemove.push(absent.indexOf(abs))
+            if (!(absentsToRemove.includes(absent.indexOf(abs)))){
+                absentsToRemove.push(absent.indexOf(abs))
+            }
         }
     }
-    for (var rem of absentsToRemove){
+    var uniqueVars = absentsToRemove.filter(onlyUnique)
+    uniqueVars.sort((a,b)=>a-b) 
+    console.log(uniqueVars)
+    for (var rem of uniqueVars){
         absent.splice(rem, 1)
     }
     
@@ -207,9 +225,9 @@ function updateWordArray() {
             unknownLetterIndicies.push(i)
         }
     }
+
     for (word of correctWords2) {        
         if (present.flat().every(m => word.includes(m))) {
-
             for (i of unknownLetterIndicies) {
                 if (present[i].every(m => word[i] != m)){
                     if (!(correctWords3.includes(word))){
@@ -224,14 +242,20 @@ function updateWordArray() {
         for (var l=0;l<5;l++) {
             for (var z=0;z<present[l].length;z++) {
                 if (word[l] == present[l][z]) {
-                    wordIdxToRemove.push(correctWords3.indexOf(word))
+                    if (!(wordIdxToRemove.includes(correctWords3.indexOf(word)))){
+                        wordIdxToRemove.push(correctWords3.indexOf(word))
+                    }
                 }
             }
         }
     }
-    while(wordIdxToRemove.length) {
-        correctWords3.splice(wordIdxToRemove.pop(), 1);
+
+    var uniqueVars = wordIdxToRemove.filter(onlyUnique)
+    uniqueVars.sort((a,b)=>a-b)
+    while(uniqueVars.length) {
+        correctWords3.splice(uniqueVars.pop(), 1);
     }
+
 
     var possibleWords = []
     for (var word of correctWords3){
@@ -239,6 +263,7 @@ function updateWordArray() {
     }
     console.log('Possible Words:')
     console.log(possibleWords)
+    console.log(correct, absent, present)
     return correctWords3
 }
 
@@ -250,6 +275,8 @@ var word_array = []
 for (var word of words) {
     word_array.push([...word])
 }
+
+
 word_array = updateWordArray()
 var nextGuess = generateNextGuess(word_array)
 setLetters(gameRows[getIndexOfNextRow()], nextGuess, colors)
