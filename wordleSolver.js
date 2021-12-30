@@ -159,10 +159,14 @@ function updateWordArray() {
         if (correct.includes(abs)){
             absentsToRemove.push(absent.indexOf(abs))
         }
+        if (present.flat().includes(abs)) {
+            absentsToRemove.push(absent.indexOf(abs))
+        }
     }
     for (var rem of absentsToRemove){
         absent.splice(rem, 1)
     }
+    
     
 
     // Correct words
