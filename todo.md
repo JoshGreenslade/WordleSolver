@@ -1,0 +1,1 @@
+[] There's bug with double letters where it'll remove words that contain that letter, even if one instance of the letter should be there.
