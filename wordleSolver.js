@@ -1,5 +1,3 @@
-console.log('Hello World')
-
 var wordLength = 5
 var word
 
@@ -107,7 +105,6 @@ function getIndexOfNextRow() {
         var row = gameRows[i]
         if (row.getAttribute('letters') === '') {
             if (row.shadowRoot.querySelectorAll('game-tile')[0].getAttribute('evaluation') == null){
-                console.log('THIS ROW ' + i)
                 break
             }
         }
@@ -157,6 +154,15 @@ function updateWordArray() {
             }
         }
     }
+    var absentsToRemove = []
+    for (var abs of absent) {
+        if (correct.includes(abs)){
+            absentsToRemove.push(absent.indexOf(abs))
+        }
+    }
+    for (var rem of absentsToRemove){
+        absent.splice(rem, 1)
+    }
     
 
     // Correct words
@@ -180,8 +186,6 @@ function updateWordArray() {
     if (correctWords.length == 0) {
         correctWords = word_array
     }
-    console.log('C1')
-    console.log(correctWords)
 
     // Absent letters
     var correctWords2 = []
@@ -190,9 +194,6 @@ function updateWordArray() {
             correctWords2.push(word)
         }
     }
-    console.log('C2')
-    console.log(correctWords2)
-
     var correctWords3 = []
 
     // Present letters
@@ -214,13 +215,26 @@ function updateWordArray() {
             }
         }
     }
+    var wordIdxToRemove = []
+    for (word of correctWords3) {
+        for (var l=0;l<5;l++) {
+            for (var z=0;z<present[l].length;z++) {
+                if (word[l] == present[l][z]) {
+                    wordIdxToRemove.push(correctWords3.indexOf(word))
+                }
+            }
+        }
+    }
+    while(wordIdxToRemove.length) {
+        correctWords3.splice(wordIdxToRemove.pop(), 1);
+    }
 
-
-    console.log('C3')
-
-    console.log(correctWords3)
-    console.log([correct, absent, present])
-
+    var possibleWords = []
+    for (var word of correctWords3){
+        possibleWords.push(word.join(''))
+    }
+    console.log('Possible Words:')
+    console.log(possibleWords)
     return correctWords3
 }
 
